@@ -1,64 +1,153 @@
-# a3_sdk_py
+# a3sdk
 
-## Using
+## Установка и использование библиотеки
 
-Import
+**Установка**
+
+Библиотеку возможно установить при помощи утилиты `pip`:
+
+    pip install A3SDK==0.0.1
+
+**Использование**
 
 ```python
-import A3SDK
+from A3SDK import Tokenizer
+from A3SDK import PF
 ```
 
-Define
+## Tokenizer
 
 ```python
-a3 = A3SDK(
-    'TEST_MERCHANT123',
-    '686f1c3c-5dce-11e8-966f-1bf2ed34490d',
-    cert_crt='/home/vanzhiganov/Documents/ssl/anzhiganov.crt',
-    cert_key='/home/vanzhiganov/Documents/ssl/private.key',
-    # production, test. default: production
-    # env='test',
-    test=True,
-    debug=True
+tokenizer = Tokenizer()
+tokenizer.is_test = True
+```
+
+```python
+tokenizer.get_token(
+    systemId='EXAMPLE',
+    **{
+        "systemId": "EXAMPLE",
+        "cardNumber": "2200000000000000",
+        "cardCVV": "000",
+        "cardExp": "1111",
+        "cardHolder": "CARD OWNER",
+        "orderId": "1"
+    })
+```
+
+## ProcessingFront
+
+```python
+pf = PF()
+pf.is_test = True
+```
+
+### Method `initPayment`
+
+```python
+pf.cancelPayment(
+    systemID='EXAMPLE',
+    orderID='560ce567-dd57-4d3b-a1b5-d358ce932810'
 )
 ```
 
-Using
+### Method `initAuthentication`
 
 ```python
-a3.init_payment(
-    payment_type='CARD',
-    phone='79154747270',
-    order_id='101010',
-    amount=123.23,
-    fee=1.21,
-    currency=643,
-    format='soap' # soap, json. default: soap
+...
+```
+
+### Method `cancelPayment`
+
+```python
+pf.cancelPayment(systemID='EXAMPLE', orderID='560ce567-dd57-4d3b-a1b5-d358ce932810')
+```
+
+### Method `enableRecurringKey`
+
+```python
+pf.enableRecurringKey(systemID='EXAMPLE', key='1000000000', user={'phone': '9150000000'})
+```
+
+```python
+{
+    'code': 3,
+    'description': 'Ключ не найден [key=1000000000].'
+}
+```
+
+
+### Method `getPaymentInfo`
+
+```python
+pf.getPaymentInfo(**dict(systemID='EXAMPLE', orderID='38d2aefe-21ea-4e3b-91aa-05d9905f2d21'))
+```
+
+Примерный ответ
+
+```python
+{
+    'operationResult': {
+        'code': 1,
+        'description': 'OK'
+    },
+    'orderID': '38d2aefe-21ea-4e3b-91aa-05d9905f2d21',
+    'authCode': '111111',
+    'terminal': '11111111',
+    'cardNumber': '220000******0000',
+    'bills': None,
+    'trID': 1000000000
+}
+```
+
+
+### Method `getPaymentStatus`
+
+```python
+pf.getPaymentStatus(**dict(systemID='EXAMPLE', orderID='38d2aefe-21ea-4e3b-91aa-05d9905f2d21'))
+```
+
+Примерный ответ
+
+```python
+{
+    'operationResult': {
+        'code': 1,
+        'description': 'OK'
+    },
+    'orderStatus': {
+        'orderID': '38d2aefe-21ea-4e3b-91aa-05d9905f2d21',
+        'trStatus': '2',
+        'trStatusDesc': None,
+        'trChangeDateTime': None,
+        'authCode': '111111',
+        'terminal': '11111111',
+        'cardNumber': '220000******0000',
+        'trID': '1000000000'
+    }
+}
+```
+
+
+### Method `dailyReportRequest`
+
+```python
+pf.dailyReportRequest(
+    systemID='EXAMPLE',
+    date='2017-08-07',
+    status=2,
+    signature=''
 )
 ```
 
-## Logging
+Примерный ответ
 
 ```python
-self.logger.warning(
-    'Protocol problem: %s',
-    'connection reset',
-    extra={'clientip': '192.168.0.1', 'user': 'a3loggs'}
-)
+{
+    "operationResult": {
+        "code": 3,
+        "description": "Неверная подпись."
+    },
+    "orders": None
+}
 ```
-
-or
-
-```python
-self.logger.error('error')
-```
-
-```
-curl https://sandbox3.payture.com/api/MobilePay?Key=TestMerchant&PayToken=QndiR1VnU1c1RUxNQWtHQTFVRUJoTUNWVk1&OrderId=765274662064352224501405313655251654
-```
-
-# Certs
-
-    openssl pkcs12 -in filename.p12 -nocerts -out filename.key
-
-    openssl pkcs12 -in filename.p12 -clcerts -nokeys -out filename.crt 

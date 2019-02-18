@@ -1,24 +1,29 @@
+
 import re
+import logging
 
 
 class Base(object):
-    PAYMENT_TYPES = ['CARD', 'PHONE', 'ANDROIDPAY', 'APPLEPAY']
+    FORMAT = '%(asctime)-15s %(clientip)s %(user)-8s %(message)s'
 
     def __init__(self, merchant_id, secret='', **args):
         self.merchant_id = merchant_id
         self.secret = secret
-        self.env = 'production' if args.get('env') == 'production' else 'test'
+
+        logging.basicConfig(format=self.FORMAT)
+        self.logger = logging.getLogger('a3')
+
 
     def validate_phone(self, phone):
         """Validate phone number
 
         See also: https://en.wikipedia.org/wiki/Telephone_numbers_in_Russia
 
-        >>> Base().validate_phone('9154747270')
+        >>> Base().validate_phone('9100000000')
         True
-        >>> Base().validate_phone('+79154747270')
+        >>> Base().validate_phone('+79100000000')
         True
-        >>> Base().validate_phone('89154747270')
+        >>> Base().validate_phone('89100000000')
         True
 
         :param phone: str
